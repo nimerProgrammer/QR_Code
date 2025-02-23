@@ -13,20 +13,29 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y python3 python3-pip openjdk-17-jdk unzip zip wget libncurses6
-          
+
       - name: Install Android SDK and Accept Licenses
         run: |
           export ANDROID_SDK_ROOT=$HOME/android-sdk
-          mkdir -p $ANDROID_SDK_ROOT/cmdline-tools/latest
-          cd $ANDROID_SDK_ROOT/cmdline-tools/latest
+          mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
+          cd $ANDROID_SDK_ROOT/cmdline-tools
+          
+          # Download Android SDK command-line tools
           wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O sdk-tools.zip
           unzip sdk-tools.zip
           rm sdk-tools.zip
+          
+          # Move into correct directory structure
+          mv cmdline-tools latest
+          
+          # Set PATH to recognize sdkmanager
           export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH
           echo "export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH" >> $HOME/.bashrc
           source $HOME/.bashrc
-          yes | sdkmanager --licenses
-          sdkmanager "platform-tools" "platforms;android-34" "build-tools;36.0.0-rc5"
+          
+          # Accept licenses and install required components
+          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
+          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-34" "build-tools;36.0.0-rc5"
 
       - name: Build APK
         uses: digreatbrian/buildozer-action@v2
